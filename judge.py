@@ -64,7 +64,7 @@ def reset_prompt(connection, prompt_id):
 
 def get_next_prompt(connection):
     with connection.cursor() as cursor:
-        for i in range(1, 21):
+        for i in range(1, 11):
             field_name = f"result{i}"
             cursor.execute(f"""
                 SELECT prompts.id FROM prompts
