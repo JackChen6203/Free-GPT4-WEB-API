@@ -320,7 +320,7 @@ async def index() -> str:
         file = request.files["file"]
         text = file.read().decode("utf-8")
         question = text
-        print("Post reading the file", question)
+        # print("Post reading the file", question)
 
     print("ici")
     if question is None:
@@ -329,7 +329,7 @@ async def index() -> str:
     # Gets the response from the bot
     # print(PROVIDERS[args.provider].params)  # supported args
     print("\nCookies: " + str(len(args.cookie_file)))
-    print("\nInput: " + question)
+    # print("\nInput: " + question)
     if (len(args.cookie_file) != 0):
         try:
             cookies = json.load(open(args.cookie_file)) # Loads the cookies from the file
@@ -370,7 +370,7 @@ async def index() -> str:
             )
         )
 
-    print(response)
+    # print(response)
 
     #Joins the response into a single string
     resp_str = ""
