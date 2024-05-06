@@ -50,8 +50,8 @@ def reset_is_taken_if_needed(connection):
     with connection.cursor() as cursor:
         cursor.execute("SELECT COUNT(*) AS count FROM llama_prompts WHERE is_taken = 1")
         count_result = cursor.fetchone()
-        if count_result['count'] > 20:
-            print("is_taken = 1的數量超過20，正在重設...")
+        if count_result['count'] > 30:
+            print("is_taken = 1的數量超過30，正在重設...")
             cursor.execute("UPDATE prompts SET is_taken = 0")
             connection.commit()
             print("所有is_taken已重設為0。")
@@ -115,6 +115,7 @@ def process_prompts():
             if response.ok:
                 decision = clean_text(response.text)
                 update_field(connection, prompt_id, field_name, decision)
+                reset_is_taken_if_needed(connection)
             else:
                 print("伺服器回應非200，嘗試重啟伺服器...")
                 server_process.terminate()  # 終止當前伺服器進程
