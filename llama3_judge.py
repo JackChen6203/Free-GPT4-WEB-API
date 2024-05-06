@@ -48,7 +48,7 @@ def clean_text(input_text):
 
 def reset_is_taken_if_needed(connection):
     with connection.cursor() as cursor:
-        cursor.execute("SELECT COUNT(*) AS count FROM prompts WHERE is_taken = 1")
+        cursor.execute("SELECT COUNT(*) AS count FROM llama_prompts WHERE is_taken = 1")
         count_result = cursor.fetchone()
         if count_result['count'] > 20:
             print("is_taken = 1的數量超過20，正在重設...")
@@ -58,7 +58,7 @@ def reset_is_taken_if_needed(connection):
 
 def reset_prompt(connection, prompt_id):
     with connection.cursor() as cursor:
-        cursor.execute("UPDATE prompts SET is_taken = 0 WHERE id = %s", (prompt_id,))
+        cursor.execute("UPDATE llama_prompts SET is_taken = 0 WHERE id = %s", (prompt_id,))
         connection.commit()
         print(f"已重設提示ID {prompt_id} 的 is_taken 為0。")
 
@@ -67,16 +67,16 @@ def get_next_prompt(connection):
         for i in range(1, 11):
             field_name = f"result{i}"
             cursor.execute(f"""
-                SELECT prompts.id FROM prompts
-                INNER JOIN gpt4_judged_final ON prompts.id = gpt4_judged_final.prompts_id
-                WHERE prompts.is_taken = 0 AND gpt4_judged_final.{field_name} IS NULL
-                ORDER BY prompts.id ASC
+                SELECT llama_prompts.id FROM llama_prompts
+                INNER JOIN gpt4_judged_llama3_final ON llama_prompts.id = gpt4_judged_llama3_final.prompts_id
+                WHERE llama_prompts.is_taken = 0 AND gpt4_judged_llama3_final.{field_name} IS NULL
+                ORDER BY llama_prompts.id ASC
                 LIMIT 1
             """)
             result = cursor.fetchone()
             if result:
                 prompt_id = result['id']
-                cursor.execute("UPDATE prompts SET is_taken = 1 WHERE id = %s", (prompt_id,))
+                cursor.execute("UPDATE llama_prompts SET is_taken = 1 WHERE id = %s", (prompt_id,))
                 connection.commit()
                 print(f"獲得並設置提示ID {prompt_id} 的 is_taken 為1，欄位：{field_name}")
                 return {'id': prompt_id, 'field_name': field_name}
@@ -87,12 +87,12 @@ def get_next_prompt(connection):
 def update_field(connection, prompt_id, field_name, decision):
     with connection.cursor() as cursor:
         # 檢查欄位是否已經被其他程序更新
-        cursor.execute(f"SELECT {field_name} FROM gpt4_judged_final WHERE prompts_id = %s", (prompt_id,))
+        cursor.execute(f"SELECT {field_name} FROM gpt4_judged_llama3_final WHERE prompts_id = %s", (prompt_id,))
         if cursor.fetchone()[field_name] is None:
             # 更新數據庫中的欄位
-            cursor.execute(f"UPDATE gpt4_judged_final SET {field_name} = %s WHERE prompts_id = %s AND {field_name} IS NULL", (decision, prompt_id))
+            cursor.execute(f"UPDATE gpt4_judged_llama3_final SET {field_name} = %s WHERE prompts_id = %s AND {field_name} IS NULL", (decision, prompt_id))
             connection.commit()
-            print(f"gpt4_judged_final表更新成功，ID {prompt_id}，欄位：{field_name}")
+            print(f"gpt4_judged_llama3_final表更新成功，ID {prompt_id}，欄位：{field_name}")
         else:
             print(f"欄位 {field_name} 已被更新，跳過此ID {prompt_id}。")
 
@@ -108,7 +108,7 @@ def process_prompts():
             prompt_id = prompt_info['id']
             field_name = prompt_info['field_name']
             cursor = connection.cursor()
-            cursor.execute("SELECT p.trained_result, d.value as description FROM prompts p JOIN descriptions d ON p.cve_id = d.cve_id WHERE p.id = %s", (prompt_id,))
+            cursor.execute("SELECT p.trained_result, d.value as description FROM llama_prompts p JOIN descriptions d ON p.cve_id = d.cve_id WHERE p.id = %s", (prompt_id,))
             result = cursor.fetchone()
             content = f"請您實際的使用\n1.修補方法: {result['trained_result']} 來修補\n2.漏洞: {result['description']} 確認實作修補策略是否可修補這個漏洞\n3.只需要回答是或否即可。"
             response = requests.get(f"http://127.0.0.1:5500?text={content}")
