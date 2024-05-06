@@ -56,15 +56,15 @@ PROVIDERS = {
 GENERIC_MODELS = ["gpt-3.5-turbo", "gpt-4"]
 
 
-print(
-    """
-    FreeGPT4 Web API - A Web API for GPT-4
-    Repo: github.com/aledipa/FreeGPT4-WEB-API
-    By: Alessandro Di Pasquale
+# print(
+#     """
+#     FreeGPT4 Web API - A Web API for GPT-4
+#     Repo: github.com/aledipa/FreeGPT4-WEB-API
+#     By: Alessandro Di Pasquale
 
-    GPT4Free Credits: github.com/xtekky/gpt4free
-    """,
-)
+#     GPT4Free Credits: github.com/xtekky/gpt4free
+#     """,
+# )
 parser = argparse.ArgumentParser()
 parser.add_argument(
     "--remove-sources",
@@ -307,33 +307,33 @@ async def index() -> str:
     """
 
     # Starts the bot and gets the input
-    print("Initializing...")
+    # print("Initializing...")
     question = None
 
-    print("start")
+    # print("start")
     if request.method == "GET":
         question = request.args.get(args.keyword) #text
         if (args.private_mode and request.args.get("token") != data["token"]):
             return "<p id='response'>Invalid token</p>"
-        print("get")
+        # print("get")
     else:
         file = request.files["file"]
         text = file.read().decode("utf-8")
         question = text
         # print("Post reading the file", question)
 
-    print("ici")
+    # print("ici")
     if question is None:
         return "<p id='response'>Please enter a question</p>"
     
     # Gets the response from the bot
     # print(PROVIDERS[args.provider].params)  # supported args
-    print("\nCookies: " + str(len(args.cookie_file)))
+    # print("\nCookies: " + str(len(args.cookie_file)))
     # print("\nInput: " + question)
     if (len(args.cookie_file) != 0):
         try:
             cookies = json.load(open(args.cookie_file)) # Loads the cookies from the file
-            print("COOKIES: "+str(cookies))
+            # print("COOKIES: "+str(cookies))
             if (len(cookies) == 0):
                 cookies = {"a": "b"} # Dummy cookies
         except Exception as error:
@@ -344,10 +344,10 @@ async def index() -> str:
 
     
     if (args.enable_history):
-        print("History enabled")
+        # print("History enabled")
         message_history.append({"role": "user", "content": question})
     else:
-        print("History disabled")
+        # print("History disabled")
         message_history.clear()
         message_history.append({"role": "system", "content": args.system_prompt})
         message_history.append({"role": "user", "content": question})
