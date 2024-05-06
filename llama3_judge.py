@@ -52,7 +52,7 @@ def reset_is_taken_if_needed(connection):
         count_result = cursor.fetchone()
         if count_result['count'] > 30:
             print("is_taken = 1的數量超過30，正在重設...")
-            cursor.execute("UPDATE prompts SET is_taken = 0")
+            cursor.execute("UPDATE llama_prompts SET is_taken = 0")
             connection.commit()
             print("所有is_taken已重設為0。")
 
